@@ -1,4 +1,6 @@
 import pandas as pd
+from .utils import data_atual
+from .leitura_pagina import submit_cnpj_and_access_link
 
 
 def executa_ativos(dados, workbook):
@@ -48,7 +50,9 @@ def Investimend_Fund(dados, workbook):
         'grossValue': [],
         'virtualIOF': [],
         'incomeTax': [],
-        'ir_iof': []
+        'ir_iof': [],
+        'rentabilidade_mensal': []
+
     }
     try:
         investimen_fund_list = dados.get('InvestmentFund', [])
@@ -61,6 +65,7 @@ def Investimend_Fund(dados, workbook):
             investment_fund['ticker'].append(investimen_fund_list[i]['Fund']['FundCNPJCode'])
             investment_fund['managerName'].append(investimen_fund_list[i]['Fund']['ManagerName'])
             investment_fund['fundLiquidity'].append(investimen_fund_list[i]['Fund']['FundLiquidity'])
+            investment_fund['rentabilidade_mensal'].append(submit_cnpj_and_access_link(investment_fund['ticker'][i]))
 
             total_gross_value = 0
             total_net_value = 0
