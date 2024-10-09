@@ -50,3 +50,5 @@ def webhook():
     webhook_completed_event.set()
     print("Requisição recebida com sucesso.")
     return 'OK', 200
+
+

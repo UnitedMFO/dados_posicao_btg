@@ -12,25 +12,13 @@ def hello():
 def webhook():
     data = request.json
 
+    # Exibir o JSON recebido no terminal
+    print("Dados recebidos:")
+    print(json.dumps(data, indent=4))  # Exibe o JSON de forma formatada
 
-
-    # Nome temporário para o arquivo
-    temp_filename = 'temp.json'
-
-    # Salva os dados em um arquivo JSON temporário
-    with open(temp_filename, 'w') as f:
-        json.dump(data, f, indent=4)
-
-    # Ler o arquivo temporário para obter o "accountNumber"
-    with open(temp_filename, 'r') as f:
-        content = json.load(f)
-        account_number = content.get('response', {}).get('accountNumber', 'unknown')  # Pega o accountNumber ou 'unknown' se não existir
-
-    # Definir o nome do novo arquivo com base no accountNumber
-    new_filename = f'{account_number}.json'
-
-    # Renomear o arquivo temporário com o accountNumber
-    os.rename(temp_filename, new_filename)
+    # Extrair o accountNumber e exibir no terminal
+    account_number = data.get('response', {}).get('accountNumber', 'unknown')
+    print(f"Account Number: {account_number}")
 
     return 'OK', 200
 

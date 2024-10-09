@@ -1,11 +1,11 @@
 import os
 import sys
-from .utils import validar_data
-from .api_requests import requisicao_dados_cadastrais
+from utils import validar_data
+from api_requests import requisicao_dados_cadastrais
 from datetime import date, timedelta
 
 
-def obter_data_post_EM():
+def obter_data_post():
     # Define o primeiro e o último dia do mês anterior
     endDate = (date.today().replace(day=1) - timedelta(days=1))
     startDate = endDate.replace(day=1)
@@ -26,8 +26,10 @@ def obter_data_post_EM():
     return startDate, endDate
 
 
-def obter_codigo_cliente_EM(token,data,codigo_cliente):
+def obter_codigo_cliente(token,data):
     while True:
+        codigo_cliente = input("Digite o código do cliente: ")
+
         if len(codigo_cliente) == 9 and codigo_cliente.isdigit():
             dados = requisicao_dados_cadastrais(codigo_cliente, token)
 

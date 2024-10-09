@@ -1,19 +1,28 @@
 import pandas as pd
-from .utils import data_atual
-from .leitura_pagina import submit_cnpj_and_access_link
+from leitura_pagina import submit_cnpj_and_calculate_rentabilidade
 
 
 def executa_ativos(dados, workbook):
-    list_ativos =[
-        Investimend_Fund(dados, workbook),
-        FixedIncome(dados, workbook),
-        PensionInformations(dados, workbook),
-        Cash(dados, workbook),
-        FixedIncomeStructuredNote(dados, workbook),
-        StockPositions(dados, workbook),
-        CryptoCoin(dados, workbook),
-        Equities(dados, workbook)
-    ]
+    list_ativos = []
+
+    # Função para tentar executar e capturar erros
+    def executar_funcao(func, dados, workbook):
+        try:
+            result = func(dados, workbook)
+            if result:  # Se o resultado não for None ou vazio, adiciona à lista
+                list_ativos.append(result)
+        except Exception as e:
+            print(f"Erro ao executar {func.__name__}: {e}")
+
+    # Chamando as funções de ativos individualmente
+    executar_funcao(Investimend_Fund, dados, workbook)
+    executar_funcao(FixedIncome, dados, workbook)
+    executar_funcao(PensionInformations, dados, workbook)
+    executar_funcao(Cash, dados, workbook)
+    executar_funcao(FixedIncomeStructuredNote, dados, workbook)
+    executar_funcao(StockPositions, dados, workbook)
+    executar_funcao(CryptoCoin, dados, workbook)
+    executar_funcao(Equities, dados, workbook)
 
     return list_ativos
 
@@ -51,11 +60,13 @@ def Investimend_Fund(dados, workbook):
         'virtualIOF': [],
         'incomeTax': [],
         'ir_iof': [],
-        'rentabilidade_mensal': []
+        'rentabilidade_mes_atual': [],
+        'rentabilidade_mes_anterior': []
 
     }
     try:
         investimen_fund_list = dados.get('InvestmentFund', [])
+        # investimen_fund_list_mes_anterior = dados_mes_anterior.get('InvestmentFund', [])
 
         if not investimen_fund_list:
             raise ValueError("A lista 'InvestmentFund' está vazia ou não existe.")
@@ -65,7 +76,9 @@ def Investimend_Fund(dados, workbook):
             investment_fund['ticker'].append(investimen_fund_list[i]['Fund']['FundCNPJCode'])
             investment_fund['managerName'].append(investimen_fund_list[i]['Fund']['ManagerName'])
             investment_fund['fundLiquidity'].append(investimen_fund_list[i]['Fund']['FundLiquidity'])
-            investment_fund['rentabilidade_mensal'].append(submit_cnpj_and_access_link(investment_fund['ticker'][i]))
+            investment_fund['rentabilidade_mes_atual'].append(submit_cnpj_and_calculate_rentabilidade(investment_fund['ticker'][i])[0])
+            investment_fund['rentabilidade_mes_anterior'].append(submit_cnpj_and_calculate_rentabilidade(investment_fund['ticker'][i])[1])
+
 
             total_gross_value = 0
             total_net_value = 0
@@ -74,11 +87,13 @@ def Investimend_Fund(dados, workbook):
 
             for j in range(len(investimen_fund_list[i]['Acquisition'])):
                 total_gross_value += float(investimen_fund_list[i]['Acquisition'][j]['GrossAssetValue'])
+                # total_gross_value_mes_anterior += float(investimen_fund_list[i]['Acquisition'][j]['GrossAssetValue'])
                 total_net_value += float(investimen_fund_list[i]['Acquisition'][j]['NetAssetValue'])
                 total_virtual_iof += float(investimen_fund_list[i]['Acquisition'][j]['VirtualIOF'])
                 total_income_tax += float(investimen_fund_list[i]['Acquisition'][j]['IncomeTax'])
 
             investment_fund['grossValue'].append(float(f"{total_gross_value:.2f}"))
+            # investment_fund['value_mes_anterior'].append(float(f"{total_gross_value_mes_anterior:.2f}"))
             investment_fund['netValue'].append(float(f"{total_net_value:.2f}"))
             investment_fund['incomeTax'].append(float(f"{total_income_tax:.2f}"))
             investment_fund['virtualIOF'].append(float(f"{total_virtual_iof:.2f}"))
@@ -187,9 +202,6 @@ def Cash(dados,  workbook):
         for i in range(len(cash_invested)):
             soma += float(cash_invested[i].get('GrossValue'))
 
-
-        # gross_value = float(cash_invested[1].get('GrossValue'))
-
     except (IndexError, ValueError, KeyError, TypeError) as e:
         print(f"Erro: {str(e)}")
 
@@ -276,7 +288,7 @@ def StockPositions( dados, workbook):
 
 def CryptoCoin( dados, workbook):
     cryptoCoin = {
-        'name': [],
+        'ticker': [],
         'quantity': [],
         'grossValue': [],
         'netValue': []
@@ -288,7 +300,7 @@ def CryptoCoin( dados, workbook):
             raise ValueError("A lista 'CryptoCoin' está vazia ou não existe.")
 
         for cripto in crypt_list:
-            cryptoCoin['name'].append(cripto['Asset']['Name'])
+            cryptoCoin['ticker'].append(cripto['Asset']['Name'])
             cryptoCoin['quantity'].append(cripto['Quantity'])
             cryptoCoin['grossValue'].append(float(cripto['GrossFinancial']))
             cryptoCoin['netValue'].append(float(cripto['GrossFinancial']))

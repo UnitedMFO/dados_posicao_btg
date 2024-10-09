@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from openpyxl import load_workbook
-from .utils import formata_cpj, formata_para_real
+from utils import formata_cpj, formata_para_real
 from openpyxl.styles import PatternFill
 
 

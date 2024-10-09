@@ -1,65 +1,77 @@
 from playwright.sync_api import sync_playwright
-from .utils import data_atual
+from utils import data_atual, data_mes_anterior
 
-def submit_cnpj_and_access_link(cnpj):
+def submit_cnpj_and_calculate_rentabilidade(cnpj):
     with sync_playwright() as p:
         # Inicializando o navegador no modo headless (sem interface gráfica)
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
         try:
-            acessar_pagina_fundo(page, cnpj)
+            acessar_dados_fundo(page, cnpj)
 
-            mes_anterior, mes_atual = data_atual()
+            mes_atual = data_atual()
+            meses_anteriores = data_mes_anterior()
 
-            # Capturar dados do mês anterior
-            values_quotas_mes_anterior = capturar_dados_mes(page, mes_anterior)
+            # Capturar dados de cotas
+            cotas_mes_atual = capturar_cotas_por_mes(page, mes_atual[1])
+            cotas_mes_anterior = capturar_cotas_por_mes(page, mes_atual[0])
 
-            # Capturar dados do mês atual
-            values_quotas_mes_atual = capturar_dados_mes(page, mes_atual)
+            # Capturar dados do mês anterior e anteriores a ele
+            cotas_mes_antes_do_anterior = capturar_cotas_por_mes(page, meses_anteriores[1])
+            cotas_mes_dois_antes = capturar_cotas_por_mes(page, meses_anteriores[0])
 
-            # Exibir a última cota
-            ultima_cota_mes_anterior = ultima_quota(values_quotas_mes_anterior)
-            ultima_cota_mes_atual = ultima_quota(values_quotas_mes_atual)
-            print(f'Última cota do mês anterior: {ultima_cota_mes_anterior}')
-            print(f'Cota Diaria do mês atual: {ultima_cota_mes_atual}')
+            # Determinar as últimas cotas de cada mês
+            ultima_cota_mes_atual = ultima_cota(cotas_mes_atual)
+            ultima_cota_mes_anterior = ultima_cota(cotas_mes_anterior)
+            ultima_cota_mes_antes_do_anterior = ultima_cota(cotas_mes_antes_do_anterior)
+            ultima_cota_mes_dois_antes = ultima_cota(cotas_mes_dois_antes)
 
-            media = media_quotas(ultima_cota_mes_anterior, ultima_cota_mes_atual)
-            print(f'Média de cota diária: {media:.2%}')
+            # # Exibir informações de cotas
+            # print(f'Última cota do mês anterior: {ultima_cota_mes_anterior}')
+            # print(f'Última cota do mês atual: {ultima_cota_mes_atual}')
+            # print(f'Última cota do mês antes do anterior: {ultima_cota_mes_antes_do_anterior}')
+            # print(f'Última cota do mês dois antes: {ultima_cota_mes_dois_antes}')
+
+            # Calcular e exibir médias de rentabilidade
+            rentabilidade_mes_atual = calcular_rentabilidade(ultima_cota_mes_anterior, ultima_cota_mes_atual)
+            rentabilidade_mes_anterior = calcular_rentabilidade(ultima_cota_mes_dois_antes, ultima_cota_mes_antes_do_anterior)
+            # print(f'Rentabilidade do mês atual: {rentabilidade_mes_atual:.2%}')
+            # print(f'Rentabilidade do mês anterior: {rentabilidade_mes_anterior:.2%}')
 
         finally:
             browser.close()
 
-        return media
+        return rentabilidade_mes_atual, rentabilidade_mes_anterior
 
 
-def ultima_quota(values_quotas):
-    if(type(values_quotas) == str):
-        return values_quotas
-    quotas_filtradas = [quota for quota in values_quotas if quota.strip()]
-    return quotas_filtradas[-1] if quotas_filtradas else 'N/A'
+def ultima_cota(lista_de_cotas):
+    """Retorna a última cota válida de uma lista."""
+    cotas_validas = [cota for cota in lista_de_cotas if cota.strip()]  # Remove valores vazios
+    return cotas_validas[-1] if cotas_validas else 'N/A'
 
 
-def acessar_pagina_fundo(page, cnpj):
-    # Acessa a página inicial
-    page.goto('https://cvmweb.cvm.gov.br/SWB//Sistemas/SCW/CPublica/CConsolFdo/FormBuscaParticFdo.aspx')
+def acessar_dados_fundo(page, cnpj):
+    """Acessa diretamente a página de resultados do fundo usando o CNPJ fornecido."""
+    # URL para acessar diretamente os resultados do fundo usando o CNPJ
+    url = f"https://cvmweb.cvm.gov.br/SWB/Sistemas/SCW/CPublica/CConsolFdo/ResultBuscaParticFdo.aspx?CNPJNome={cnpj}&TpPartic=0&Adm=false&SemFrame="
 
-    # Inserir o CNPJ e selecionar o tipo de fundo
-    page.fill('#txtCNPJNome', cnpj)
-    page.select_option('#ddlTpFdo', '0')
+    # Acessa a URL diretamente
+    page.goto(url)
 
-    # Clicar em "Continuar" e navegar para os dados diários
-    page.click('#btnContinuar')
+    # Espera até que o seletor do link que leva aos dados diários esteja disponível
     page.wait_for_selector('#ddlFundos__ctl0_Linkbutton2', timeout=10000)
+
+    # Clica no link que leva aos dados diários
     page.click('#ddlFundos__ctl0_Linkbutton2')
 
+    # Espera até que o link de dados diários esteja disponível e então clica nele
     page.wait_for_selector('#Hyperlink2', timeout=10000)
     page.click('#Hyperlink2')
 
 
-def capturar_dados_mes(page, mes):
-    """Função para selecionar um mês no dropdown e capturar os dados da tabela."""
-    # Verificar se o mês desejado está disponível no dropdown
+def capturar_cotas_por_mes(page, mes):
+    """Captura as cotas de um determinado mês na tabela de dados."""
     options = page.locator('#ddComptc option').all_inner_texts()
 
     if mes not in options:
@@ -69,23 +81,32 @@ def capturar_dados_mes(page, mes):
     # Selecionar o mês desejado no dropdown
     page.select_option('#ddComptc', mes)
 
-    # Esperar até que a tabela esteja disponível
+    # Aguardar a tabela e capturar as cotas
     page.wait_for_selector('#dgDocDiario', timeout=10000)
+    linhas = page.locator('#dgDocDiario tbody tr').all()
 
-    # Capturar as linhas da tabela
-    rows = page.locator('#dgDocDiario tbody tr').all()
+    cotas = []
+    for linha in linhas:
+        celulas = linha.locator('td').all_inner_texts()  # Captura todas as células da linha
+        if len(celulas) > 1:
+            cotas.append(celulas[1])  # Captura o valor da cota na segunda célula
 
-    values_quotas = []
-    for row in rows:
-        cells = row.locator('td').all_inner_texts()
-        if len(cells) > 1:
-            values_quotas.append(cells[1])
-
-    return values_quotas
+    return cotas
 
 
-def media_quotas(quota_anterior, quota_diaria):
-    quota_anterior = float(quota_anterior.replace(',', '.'))
-    quota_diaria = float(quota_diaria.replace(',', '.'))
-    media = quota_diaria / quota_anterior - 1
-    return media
+def calcular_rentabilidade(cota_inicial, cota_final):
+    """Calcula a rentabilidade entre duas cotas e retorna como porcentagem formatada."""
+    try:
+        # Converte as cotas para float (substituindo vírgula por ponto)
+        cota_inicial = float(cota_inicial.replace(',', '.'))
+        cota_final = float(cota_final.replace(',', '.'))
+
+        # Calcula a rentabilidade
+        rentabilidade = (cota_final / cota_inicial - 1) * 100
+
+        # Retorna a rentabilidade formatada como string com duas casas decimais e o símbolo de porcentagem
+        return f"{rentabilidade:.2f}%"
+    except ValueError:
+        print(f"Erro ao converter cotas: cota_inicial = {cota_inicial}, cota_final = {cota_final}")
+        return "N/A"
+

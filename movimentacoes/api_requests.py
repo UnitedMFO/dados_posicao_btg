@@ -1,7 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
-from .UUID import gerador_uuid
+from UUID import gerador_uuid
 
 load_dotenv()
 

@@ -1,5 +1,5 @@
-from .utils import validar_data
-from .api_requests import requisicao_dados_cadastrais
+from utils import validar_data
+from api_requests import requisicao_dados_cadastrais
 from datetime import date,timedelta
 
 def obter_data_post():
@@ -15,7 +15,6 @@ def obter_data_post():
             print("Formato de data inválido, tente novamente.")
 
     return date_req
-
 
 
 
