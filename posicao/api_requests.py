@@ -5,7 +5,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from excel_processing import executa_ativos, resumir_ativos, Investimend_Fund
 from UUID import gerador_uuid
-from utils import data_mes_anterior
+from utils import mes_anterior
 
 
 load_dotenv()
@@ -67,7 +67,8 @@ def fazer_requisicao(cod_clie, date_req, file_path, token):
             # Salva os dados no arquivo Excel
             with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
                 print("Executando ativos...")
-                list_ativos = executa_ativos(dados, writer)
+                # Investimend_Fund(dados, writer,cod_clie, date_req, token)
+                list_ativos = executa_ativos(dados, writer,cod_clie, date_req, token)
 
                 # Chamando a função para resumir os dados e salvar na aba 'resume_dados'
                 print("Resumindo dados dos ativos...")
@@ -78,6 +79,31 @@ def fazer_requisicao(cod_clie, date_req, file_path, token):
             print("Detalhes:", resposta.text)
     except Exception as e:
         print("Erro ao fazer a requisição:", e)
+
+
+def requisicao_mes_anterior(cod_clie, date_req, token):
+    data_antes = mes_anterior(date_req)
+    url = f"{API_POSITION_URL}{cod_clie}"  # URL da API
+    headers = {
+        "x-id-partner-request": gerador_uuid(),
+        "access_token": token
+    }
+    body = {
+        "date": data_antes
+    }
+    try:
+        resposta = requests.post(url, headers=headers, json=body)
+
+        if resposta.status_code == 200:
+            dados = resposta.json()
+            return dados
+
+        else:
+            print(f"Falha na requisição. Status code: {resposta.status_code}")
+            print("Detalhes:", resposta.text)
+    except Exception as e:
+        print("Erro ao fazer a requisição:", e)
+
 
 
 def requisicao_dados_cadastrais(cod_clie, token):

@@ -5,16 +5,44 @@ import os
 from datetime import datetime,date,timedelta
 
 
-
-
 def mes_anterior(data):
-    # Obter a data atual e calcular a data do mês anterior
-    data_atual = data.split('-')
-    mes = int(data_atual[1]) - 1
-    ano = data_atual[0]
-    dia = data_atual[2]
-    date_req = ano + '-' + str(mes) + '-' + dia
-    return date_req
+    while True:
+        # Solicitar ao usuário se deseja a data de um mês anterior ou inserir manualmente
+        opcao = input(f"Rentabilidade do fundo a data anterior a ({data}) ou inserir uma data manualmente (1 - manual / 0 - mes anterior) ? ")
+
+        if opcao == '1':
+            # Pergunta para o usuário inserir a data manualmente
+            while True:
+                data_manual = input("Digite a data desejada (AAAA-MM-DD): ")
+                if validar_data(data_manual):
+                    return data_manual
+                else:
+                    print("Formato de data inválido, tente novamente.")
+
+        elif opcao == '0':
+            # Se a opção for automática, calcular o mês anterior
+            data_atual = data.split('-')
+            ano = int(data_atual[0])
+            mes = int(data_atual[1])
+            dia = data_atual[2]
+
+            # Se o mês for janeiro, volta para dezembro do ano anterior
+            if mes == 1:
+                mes = 12
+                ano -= 1
+            else:
+                mes -= 1
+
+            # Formatar mês com dois dígitos
+            mes_formatado = f"{mes:02d}"
+
+            # Retornar a data no formato yyyy-mm-dd
+            date_req = f"{ano}-{mes_formatado}-{dia}"
+            return date_req
+
+        else:
+            print("Opção inválida. Escolha 0 para pegar o mês anterior ou 1 para inserir a data manualmente.")
+
 
 def data_atual():
     # Obtém a data atual e separa em ['YYYY', 'MM', 'DD']

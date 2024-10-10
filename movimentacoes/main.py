@@ -8,33 +8,37 @@ from api_requests import required_token, fazer_requisicao_movement
 from trate_data_csv import recebe_e_cria_movimentacao, formata_movimentacao, calcula_valor_liquido, destaca_negativos
 
 def main():
-    while True:
-        token = required_token()
-        data_req = obter_data_post()
-        codigo_cliente, base_nome_arquivo = obter_codigo_cliente(token, data_req[0])
+    # Inicia o servidor Flask uma vez no início
+    try:
+        server_thread = threading.Thread(target=run_server, daemon=True)  # Daemon para fechar automaticamente no final
+        server_thread.start()
+        print("Servidor Flask iniciado.")
+        time.sleep(2)  # Pausa para garantir que o servidor está rodando
+    except Exception as e:
+        print(f"Erro ao iniciar o servidor: {e}")
+        sys.exit(1)
 
+    while True:
+        # Solicitar credenciais do cliente
         try:
-            server_thread = threading.Thread(target=run_server)
-            server_thread.start()
-            time.sleep(2)  # Certifica-se de que o servidor foi iniciado corretamente
+            token = required_token()
+            data_req = obter_data_post()
+            codigo_cliente, base_nome_arquivo = obter_codigo_cliente(token, data_req[0])
         except Exception as e:
-            print(f"Erro ao iniciar o servidor: {e}")
+            print(f"Erro ao obter as credenciais ou código do cliente: {e}")
             continue
 
+        # Tentar fazer a requisição de movimentação
         try:
             fazer_requisicao_movement(codigo_cliente, data_req[0], data_req[1], token)
         except Exception as e:
             print(f"Erro ao executar a requisição de movimento: {e}")
-            try:
-                requests.post('http://127.0.0.1:5000/shutdown')
-            except Exception as shutdown_error:
-                print(f"Erro ao tentar encerrar o servidor após falha na requisição: {shutdown_error}")
             continue
 
         print("Aguardando o término do processamento do webhook...")
 
-        # Espera indefinidamente até que o evento seja sinalizado
-        webhook_completed_event.wait()  # Espera até que o webhook seja sinalizado
+        # Espera indefinidamente até que o webhook seja completado
+        webhook_completed_event.wait()  # Aguarda até o webhook ser sinalizado (sem limite de tempo)
 
         # Reseta o evento para o próximo loop
         webhook_completed_event.clear()
@@ -46,20 +50,29 @@ def main():
             formata_movimentacao(excel_filename)
             calcula_valor_liquido(excel_filename)
             destaca_negativos(excel_filename)
-
-            # Encerra o servidor após o processamento bem-sucedido
-            response = requests.post('http://127.0.0.1:5000/shutdown')
-            if response.status_code == 200:
-                print("Servidor encerrado com sucesso.")
-            else:
-                print(f"Falha ao encerrar o servidor: {response.status_code}")
-                print(response.text)
+            print("Processamento concluído com sucesso.")
         except Exception as e:
             print(f"Erro ao processar o arquivo: {e}")
-            try:
-                requests.post('http://127.0.0.1:5000/shutdown')
-            except Exception as shutdown_error:
-                print(f"Erro ao tentar encerrar o servidor: {shutdown_error}")
+            continue
+
+        # Pergunta ao usuário se deseja processar outro cliente
+        resposta = input("Deseja processar outro cliente? (1 - Sim, 0 - Não): ")
+        if resposta != '1':
+            break  # Sai do loop se a resposta não for '1'
+
+    # Encerra o servidor Flask quando o usuário decide sair
+    try:
+        response = requests.post('http://127.0.0.1:5000/shutdown')
+        if response.status_code == 200:
+            print("Servidor encerrado com sucesso.")
+        else:
+            print(f"Falha ao encerrar o servidor: {response.status_code}")
+            print(response.text)
+    except Exception as shutdown_error:
+        print(f"Erro ao tentar encerrar o servidor: {shutdown_error}")
+
+    print("Encerrando o programa.")
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()
