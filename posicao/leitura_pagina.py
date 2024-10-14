@@ -18,13 +18,13 @@ def submit_cnpj_and_calculate_rentabilidade(cnpj):
             cotas_mes_anterior = capturar_cotas_por_mes(page, mes_atual[0])
 
             # Capturar dados do mês anterior e anteriores a ele
-            cotas_mes_antes_do_anterior = capturar_cotas_por_mes(page, meses_anteriores[1])
+            # cotas_mes_antes_do_anterior = capturar_cotas_por_mes(page, meses_anteriores[1])
             cotas_mes_dois_antes = capturar_cotas_por_mes(page, meses_anteriores[0])
 
             # Determinar as últimas cotas de cada mês
             ultima_cota_mes_atual = ultima_cota(cotas_mes_atual)
             ultima_cota_mes_anterior = ultima_cota(cotas_mes_anterior)
-            ultima_cota_mes_antes_do_anterior = ultima_cota(cotas_mes_antes_do_anterior)
+            # ultima_cota_mes_antes_do_anterior = ultima_cota(cotas_mes_antes_do_anterior)
             ultima_cota_mes_dois_antes = ultima_cota(cotas_mes_dois_antes)
 
             # # Exibir informações de cotas
@@ -35,7 +35,7 @@ def submit_cnpj_and_calculate_rentabilidade(cnpj):
 
             # Calcular e exibir médias de rentabilidade
             rentabilidade_mes_atual = calcular_rentabilidade(ultima_cota_mes_anterior, ultima_cota_mes_atual)
-            rentabilidade_mes_anterior = calcular_rentabilidade(ultima_cota_mes_dois_antes, ultima_cota_mes_antes_do_anterior)
+            rentabilidade_mes_anterior = calcular_rentabilidade(ultima_cota_mes_dois_antes, ultima_cota_mes_anterior)
             # print(f'Rentabilidade do mês atual: {rentabilidade_mes_atual:.2%}')
             # print(f'Rentabilidade do mês anterior: {rentabilidade_mes_anterior:.2%}')
 

@@ -3,9 +3,9 @@ import os
 import pandas as pd
 
 from dotenv import load_dotenv
-from excel_processing import executa_ativos, resumir_ativos, Investimend_Fund
+from excel_processing import executa_ativos, resumir_ativos
 from UUID import gerador_uuid
-from utils import mes_anterior
+from utils import mes_anterior_fundo
 
 
 load_dotenv()
@@ -82,7 +82,7 @@ def fazer_requisicao(cod_clie, date_req, file_path, token):
 
 
 def requisicao_mes_anterior(cod_clie, date_req, token):
-    data_antes = mes_anterior(date_req)
+    data_antes = mes_anterior_fundo(date_req)
     url = f"{API_POSITION_URL}{cod_clie}"  # URL da API
     headers = {
         "x-id-partner-request": gerador_uuid(),

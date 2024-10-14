@@ -43,7 +43,7 @@ def recebe_e_cria_movimentacao(csv_filename, base_nome_arquivo):
 
 
 def formata_movimentacao(excel_filename):
-    list_negativos = ['CRÉDITO', 'JUROS', 'JUROS S/ CAPITAL', 'RECEBIMENTO DIVIDENDOS', 'RI', 'RS', 'VENCIMENTO DE TÍTULO', 'VENDA']
+    list_negativos = ['CRÉDITO', 'JUROS', 'JUROS S/ CAPITAL', 'RECEBIMENTO DIVIDENDOS', 'RI', 'RS', 'VENCIMENTO DE TÍTULO', 'VENDA','AMORTIZAÇÃO','RENDIMENTO']
     excel_df = pd.read_excel(excel_filename)
 
     # Formata o CNPJ na coluna 'fundCnpj'

@@ -5,7 +5,7 @@ import os
 from datetime import datetime,date,timedelta
 
 
-def mes_anterior(data):
+def mes_anterior_fundo(data):
     while True:
         # Solicitar ao usuário se deseja a data de um mês anterior ou inserir manualmente
         opcao = input(f"Rentabilidade do fundo a data anterior a ({data}) ou inserir uma data manualmente (1 - manual / 0 - mes anterior) ? ")
