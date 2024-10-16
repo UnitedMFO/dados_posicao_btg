@@ -1,5 +1,5 @@
 from playwright.sync_api import sync_playwright
-from utils import data_atual, data_mes_anterior
+from utilidades import obter_meses_atual_e_anterior, obter_dois_meses_anteriores
 
 def submit_cnpj_and_calculate_rentabilidade(cnpj):
     with sync_playwright() as p:
@@ -10,8 +10,8 @@ def submit_cnpj_and_calculate_rentabilidade(cnpj):
         try:
             acessar_dados_fundo(page, cnpj)
 
-            mes_atual = data_atual()
-            meses_anteriores = data_mes_anterior()
+            mes_atual = obter_meses_atual_e_anterior()
+            meses_anteriores = obter_dois_meses_anteriores()
 
             # Capturar dados de cotas
             cotas_mes_atual = capturar_cotas_por_mes(page, mes_atual[1])

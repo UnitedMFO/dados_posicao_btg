@@ -1,5 +1,5 @@
 import pandas as pd
-from leitura_pagina import submit_cnpj_and_calculate_rentabilidade
+from quota_cvm import submit_cnpj_and_calculate_rentabilidade
 
 
 def executa_ativos(dados, workbook, cod_clie=None, date_req=None, token=None):
@@ -51,7 +51,7 @@ def resumir_ativos(list_ativos, workbook):
     return df_resumo
 
 def Investimend_Fund(dados, workbook, cod_clie, date_req, token):
-    from api_requests import requisicao_mes_anterior
+    from requisicoes_api import fazer_requisicao_mes_anterior
 
     investment_fund = {
         'fundName': [],
@@ -75,7 +75,7 @@ def Investimend_Fund(dados, workbook, cod_clie, date_req, token):
             raise ValueError("A lista 'InvestmentFund' está vazia ou não existe.")
 
         # Fazer a requisição para os dados do mês anterior fora do loop
-        dados_mes_anterior = requisicao_mes_anterior(cod_clie, date_req, token)
+        dados_mes_anterior = fazer_requisicao_mes_anterior(cod_clie, date_req, token)
         investimen_fund_list_mes_anterior = dados_mes_anterior.get('InvestmentFund', []) if dados_mes_anterior else []
 
         for i in range(len(investimen_fund_list)):

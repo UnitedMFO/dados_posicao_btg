@@ -1,5 +1,5 @@
 import pandas as pd
-from leitura_pagina import submit_cnpj_and_calculate_rentabilidade
+from quota_cvm import submit_cnpj_and_calculate_rentabilidade
 
 
 def executa_ativos(dados, workbook, cod_clie=None, date_req=None, token=None):
@@ -99,7 +99,7 @@ def process_acquisition(acquisition_list):
 
 
 def Investimend_Fund(dados, workbook, cod_clie, date_req, token):
-    from api_requests import requisicao_mes_anterior
+    from requisicoes_api import requisicao_mes_anterior
 
     investment_fund = {
         'fundName': [], 'ticker': [], 'managerName': [], 'fundLiquidity': [],

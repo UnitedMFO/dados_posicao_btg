@@ -1,8 +1,8 @@
 import os
 
-from api_requests import fazer_requisicao, required_token
-from utils import clear_screen, aplicar_formatacao_monetaria
-from data_validation import obter_codigo_cliente, obter_data_post
+from requisicoes_api import fazer_requisicao_posicao_cliente, obter_token_autenticacao
+from utilidades import limpar_tela, aplicar_formatacao_excel
+from validacao_de_dados import obter_codigo_cliente, obter_data_post
 
 
 
@@ -12,8 +12,9 @@ def main():
     diretorio_destino = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'relatorios')
     os.makedirs(diretorio_destino, exist_ok=True)  # Cria o diretório "relatorios" se ele não existir
 
+
     while True:
-        token = required_token()
+        token = obter_token_autenticacao()
         date_req = obter_data_post()
         cod_clie, base_nome_arquivo = obter_codigo_cliente(token,date_req)
 
@@ -30,14 +31,14 @@ def main():
 
 
         # Supondo que você já tenha as funções para obter os dados e salvar no Excel
-        fazer_requisicao(cod_clie, date_req, caminho_arquivo, token)
+        fazer_requisicao_posicao_cliente(cod_clie, date_req, caminho_arquivo, token)
 
         # Aplicar a formatação monetária a todas as planilhas
-        aplicar_formatacao_monetaria(caminho_arquivo)
+        aplicar_formatacao_excel(caminho_arquivo)
 
         # Pergunta ao usuário se deseja continuar
         resp = int(input("Deseja processar outro arquivo? (1 - Sim, 0 - Não): "))
-        clear_screen()
+        limpar_tela()
         if resp == 0:
             # Usuário escolheu encerrar
             break
