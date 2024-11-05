@@ -46,3 +46,4 @@ def obter_codigo_cliente(token, data_requisicao):
                 print("Código do cliente inválido ou não encontrado. Tente novamente.")
         else:
             print("O código do cliente deve ter 9 dígitos numéricos. Tente novamente.")
+
