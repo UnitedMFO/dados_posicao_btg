@@ -2,7 +2,7 @@ import pandas as pd
 from quota_cvm import submit_cnpj_and_calculate_rentabilidade
 
 
-def executa_ativos(dados, workbook, cod_clie=None, date_req=None, token=None):
+def executa_ativos(dados, workbook):
     list_ativos = []
 
     # Função para tentar executar e capturar erros
@@ -15,7 +15,7 @@ def executa_ativos(dados, workbook, cod_clie=None, date_req=None, token=None):
             print(f"Erro ao executar {func.__name__}: {e}")
 
     # Chamando as funções de ativos individualmente, passando os parâmetros necessários
-    executar_funcao(Investimend_Fund, dados, workbook, cod_clie, date_req, token)
+    executar_funcao(Investimend_Fund, dados, workbook)
     executar_funcao(FixedIncome, dados, workbook)
     executar_funcao(PensionInformations, dados, workbook)
     executar_funcao(Cash, dados, workbook)
@@ -50,8 +50,8 @@ def resumir_ativos(list_ativos, workbook):
 
     return df_resumo
 
-def Investimend_Fund(dados, workbook, cod_clie, date_req, token):
-    from requisicoes_api import fazer_requisicao_mes_anterior
+def Investimend_Fund(dados, workbook):
+    # from requisicoes_api import fazer_requisicao_mes_anterior
 
     investment_fund = {
         'fundName': [],
@@ -63,9 +63,9 @@ def Investimend_Fund(dados, workbook, cod_clie, date_req, token):
         'virtualIOF': [],
         'incomeTax': [],
         'ir_iof': [],
-        'rentabilidade_mes_atual': [],
-        'rentabilidade_mes_anterior': [],
-        'value_mes_anterior': []
+        # 'rentabilidade_mes_atual': [],
+        # 'rentabilidade_mes_anterior': [],
+        # 'value_mes_anterior': []
     }
 
     try:
@@ -75,16 +75,16 @@ def Investimend_Fund(dados, workbook, cod_clie, date_req, token):
             raise ValueError("A lista 'InvestmentFund' está vazia ou não existe.")
 
         # Fazer a requisição para os dados do mês anterior fora do loop
-        dados_mes_anterior = fazer_requisicao_mes_anterior(cod_clie, date_req, token)
-        investimen_fund_list_mes_anterior = dados_mes_anterior.get('InvestmentFund', []) if dados_mes_anterior else []
+        # dados_mes_anterior = fazer_requisicao_mes_anterior(cod_clie, date_req, token)
+        # investimen_fund_list_mes_anterior = dados_mes_anterior.get('InvestmentFund', []) if dados_mes_anterior else []
 
         for i in range(len(investimen_fund_list)):
             investment_fund['fundName'].append(investimen_fund_list[i]['Fund']['FundName'])
             investment_fund['ticker'].append(investimen_fund_list[i]['Fund']['FundCNPJCode'])
             investment_fund['managerName'].append(investimen_fund_list[i]['Fund']['ManagerName'])
             investment_fund['fundLiquidity'].append(investimen_fund_list[i]['Fund']['FundLiquidity'])
-            investment_fund['rentabilidade_mes_atual'].append(submit_cnpj_and_calculate_rentabilidade(investment_fund['ticker'][i])[0])
-            investment_fund['rentabilidade_mes_anterior'].append(submit_cnpj_and_calculate_rentabilidade(investment_fund['ticker'][i])[1])
+            # investment_fund['rentabilidade_mes_atual'].append(submit_cnpj_and_calculate_rentabilidade(investment_fund['ticker'][i])[0])
+            # investment_fund['rentabilidade_mes_anterior'].append(submit_cnpj_and_calculate_rentabilidade(investment_fund['ticker'][i])[1])
 
             total_gross_value = 0
             total_net_value = 0
@@ -104,15 +104,15 @@ def Investimend_Fund(dados, workbook, cod_clie, date_req, token):
             investment_fund['virtualIOF'].append(float(f"{total_virtual_iof:.2f}"))
             investment_fund['ir_iof'].append(float(f"{total_income_tax + total_virtual_iof:.2f}"))
 
-            # Comparar e adicionar os valores do mês anterior
-            total_gross_value_mes_anterior = 0
-            for fund_anterior in investimen_fund_list_mes_anterior:
-                if investimen_fund_list[i]['Fund']['FundCNPJCode'] == fund_anterior['Fund']['FundCNPJCode']:
-                    for k in range(len(fund_anterior['Acquisition'])):
-                        total_gross_value_mes_anterior += float(fund_anterior['Acquisition'][k]['GrossAssetValue'])
-                    break  # Encontrou o fundo correspondente, pode sair do loop
-
-            investment_fund['value_mes_anterior'].append(float(f"{total_gross_value_mes_anterior:.2f}"))
+            # # Comparar e adicionar os valores do mês anterior
+            # total_gross_value_mes_anterior = 0
+            # for fund_anterior in investimen_fund_list_mes_anterior:
+            #     if investimen_fund_list[i]['Fund']['FundCNPJCode'] == fund_anterior['Fund']['FundCNPJCode']:
+            #         for k in range(len(fund_anterior['Acquisition'])):
+            #             total_gross_value_mes_anterior += float(fund_anterior['Acquisition'][k]['GrossAssetValue'])
+            #         break  # Encontrou o fundo correspondente, pode sair do loop
+            #
+            # investment_fund['value_mes_anterior'].append(float(f"{total_gross_value_mes_anterior:.2f}"))
 
     except (KeyError, ValueError, TypeError) as e:
         print(f"Erro: {str(e)}")

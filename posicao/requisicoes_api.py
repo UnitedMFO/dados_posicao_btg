@@ -66,7 +66,7 @@ def fazer_requisicao_posicao_cliente(codigo_cliente, data_requisicao, caminho_ar
             # Salvar os dados no arquivo Excel
             with pd.ExcelWriter(caminho_arquivo, engine='openpyxl') as escritor:
                 print("Processando ativos do cliente...")
-                lista_ativos = executa_ativos(dados_posicao, escritor, codigo_cliente, data_requisicao, token_autenticacao)
+                lista_ativos = executa_ativos(dados_posicao, escritor)
 
                 # Resumir e salvar os dados dos ativos na aba 'resumo'
                 print("Resumindo dados dos ativos...")
@@ -79,28 +79,28 @@ def fazer_requisicao_posicao_cliente(codigo_cliente, data_requisicao, caminho_ar
         print(f"Erro ao fazer a requisição de posição do cliente: {e}")
 
 
-def fazer_requisicao_mes_anterior(codigo_cliente, data_atual, token_autenticacao):
-    """Faz requisição para obter os dados de posição do cliente do mês anterior"""
-    data_mes_anterior = obter_data_mes_anterior(data_atual)
-    url = f"{URL_API_POSICOES}{codigo_cliente}"
-    headers = {
-        "x-id-partner-request": gerar_uuid(),
-        "access_token": token_autenticacao
-    }
-    body = {"date": data_mes_anterior}
-
-    try:
-        resposta = requests.post(url, headers=headers, json=body)
-
-        if resposta.status_code == 200:
-            return resposta.json()
-
-        else:
-            print(f"Erro na requisição. Código de status: {resposta.status_code}")
-            print(f"Detalhes: {resposta.text}")
-    except Exception as e:
-        print(f"Erro ao fazer a requisição para o mês anterior: {e}")
-    return None
+# def fazer_requisicao_mes_anterior(codigo_cliente, data_atual, token_autenticacao):
+#     """Faz requisição para obter os dados de posição do cliente do mês anterior"""
+#     data_mes_anterior = obter_data_mes_anterior(data_atual)
+#     url = f"{URL_API_POSICOES}{codigo_cliente}"
+#     headers = {
+#         "x-id-partner-request": gerar_uuid(),
+#         "access_token": token_autenticacao
+#     }
+#     body = {"date": data_mes_anterior}
+#
+#     try:
+#         resposta = requests.post(url, headers=headers, json=body)
+#
+#         if resposta.status_code == 200:
+#             return resposta.json()
+#
+#         else:
+#             print(f"Erro na requisição. Código de status: {resposta.status_code}")
+#             print(f"Detalhes: {resposta.text}")
+#     except Exception as e:
+#         print(f"Erro ao fazer a requisição para o mês anterior: {e}")
+#     return None
 
 
 def obter_dados_cadastrais_cliente(codigo_cliente, token_autenticacao):
