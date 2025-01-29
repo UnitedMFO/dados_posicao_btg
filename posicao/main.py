@@ -56,7 +56,7 @@ def main():
                 codigo_clientes, clientes = ler_lista_clientes()
 
                 for codigo_clientes, nome_arquivo in zip(codigo_clientes, clientes):
-                    date_req = "2024-11-30"
+                    date_req = "2024-12-31"
                     cod_clie = codigo_clientes
                     base_nome_arquivo = nome_arquivo
 
