@@ -20,6 +20,10 @@ def obter_data_post():
 
     return data_padrao
 
+def data_atual():
+    """Retorna a data atual no formato AAAA-MM-DD."""
+    data_padrao = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m-%d')
+    return data_padrao
 
 def obter_codigo_cliente(token, data_requisicao):
     """Obtém o código do cliente e gera um identificador único baseado no nome do cliente e na data."""

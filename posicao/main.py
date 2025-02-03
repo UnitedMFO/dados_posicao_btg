@@ -2,7 +2,7 @@ import os
 
 from requisicoes_api import fazer_requisicao_posicao_cliente, obter_token_autenticacao
 from utilidades import limpar_tela, aplicar_formatacao_excel
-from validacao_de_dados import obter_codigo_cliente, obter_data_post
+from validacao_de_dados import obter_codigo_cliente, obter_data_post, data_atual
 from base_clientes import ler_lista_clientes
 
 
@@ -56,7 +56,7 @@ def main():
                 codigo_clientes, clientes = ler_lista_clientes()
 
                 for codigo_clientes, nome_arquivo in zip(codigo_clientes, clientes):
-                    date_req = "2024-12-31"
+                    date_req = data_atual()
                     cod_clie = codigo_clientes
                     base_nome_arquivo = nome_arquivo
 
